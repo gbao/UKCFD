@@ -163,8 +163,9 @@ df_chart2 = df_cfd[df_cfd["Capacity (MW)"] > 0].copy()
 
 if not df_chart2.empty:
     # Melt the DataFrame for combined bar chart, using the million-unit revenue column
+    # Include 'Capacity (MW)' in id_vars so it's available for sorting in melted data
     df_melted = df_chart2.melt(
-        id_vars=["Project Name", "Allocation Round"],
+        id_vars=["Project Name", "Allocation Round", "Capacity (MW)"],
         value_vars=["Estimated Annual Production (TWh)", revenue_col_m],
         var_name="Metric",
         value_name="Value"
@@ -173,13 +174,14 @@ if not df_chart2.empty:
     # Create the combined chart
     chart2 = alt.Chart(df_melted).mark_bar().encode(
         x=alt.X("Value", title=alt.Title(f"Value (TWh / {revenue_label_unit})")),
-        y=alt.Y("Project Name", sort=alt.EncodingSortField(field="Capacity (MW)", op="sum", order="descending"), title="Project Name"), # Modified sort
+        y=alt.Y("Project Name", sort=alt.EncodingSortField(field="Capacity (MW)", op="max", order="descending"), title="Project Name"),
         color=alt.Color("Metric", title="Metric"),
         column=alt.Column("Metric", header=alt.Header(titleOrient="bottom", labelOrient="bottom")),
         tooltip=[
             alt.Tooltip("Project Name"),
             alt.Tooltip("Metric"),
-            alt.Tooltip("Value", format=".2f")
+            alt.Tooltip("Value", format=".2f"),
+            alt.Tooltip("Capacity (MW)", format=".0f") # Add Capacity to tooltip for context
         ]
     ).properties(
         title=f"Estimated Annual Production (TWh) and Revenue ({revenue_label_unit}, 2025 Value) per Project"
