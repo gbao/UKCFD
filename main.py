@@ -173,7 +173,7 @@ if not df_chart2.empty:
     # Create the combined chart
     chart2 = alt.Chart(df_melted).mark_bar().encode(
         x=alt.X("Value", title=alt.Title(f"Value (TWh / {revenue_label_unit})")),
-        y=alt.Y("Project Name", sort="-x", title="Project Name"),
+        y=alt.Y("Project Name", sort=alt.EncodingSortField(field="Capacity (MW)", op="sum", order="descending"), title="Project Name"), # Modified sort
         color=alt.Color("Metric", title="Metric"),
         column=alt.Column("Metric", header=alt.Header(titleOrient="bottom", labelOrient="bottom")),
         tooltip=[
