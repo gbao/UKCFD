@@ -140,6 +140,7 @@ df_chart1 = df_cfd[df_cfd["Capacity (MW)"] > 0].copy()
 if not df_chart1.empty:
     chart1 = alt.Chart(df_chart1).mark_bar().encode(
         x=alt.X(strike_price_col, title=f"Strike Price ({currency_symbol}/MWh)"),
+        # Sort Chart 1 projects by Capacity (MW) in descending order
         y=alt.Y("Project Name", sort=alt.EncodingSortField(field="Capacity (MW)", op="sum", order="descending"), title="Project Name"),
         color=alt.Color("Allocation Round", title="Allocation Round"),
         tooltip=[
@@ -162,8 +163,10 @@ st.header(f"Estimated Annual Production (TWh) and Revenue ({revenue_label_unit},
 df_chart2 = df_cfd[df_cfd["Capacity (MW)"] > 0].copy()
 
 if not df_chart2.empty:
+    # Get the order of projects by Capacity (MW) before melting
+    project_order = df_chart2.sort_values("Capacity (MW)", ascending=False)["Project Name"].tolist()
+
     # Melt the DataFrame for combined bar chart, using the million-unit revenue column
-    # Include 'Capacity (MW)' in id_vars so it's available for sorting in melted data
     df_melted = df_chart2.melt(
         id_vars=["Project Name", "Allocation Round", "Capacity (MW)"],
         value_vars=["Estimated Annual Production (TWh)", revenue_col_m],
@@ -174,7 +177,7 @@ if not df_chart2.empty:
     # Create the combined chart
     chart2 = alt.Chart(df_melted).mark_bar().encode(
         x=alt.X("Value", title=alt.Title(f"Value (TWh / {revenue_label_unit})")),
-        y=alt.Y("Project Name", sort=alt.EncodingSortField(field="Capacity (MW)", op="sum", order="descending"), title="Project Name"), # Changed op to "sum"
+        y=alt.Y("Project Name", sort=project_order, title="Project Name"), # Use pre-defined project_order for sorting
         color=alt.Color("Metric", title="Metric"),
         column=alt.Column("Metric", header=alt.Header(titleOrient="bottom", labelOrient="bottom")),
         tooltip=[
